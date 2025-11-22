@@ -78,14 +78,11 @@
         }
 
         public function edit() {
-            $id = $_POST['id'];
-            $convertions = (int) $id;
-            if ($convertions !=null) {
-                $location = "../frontEnd/updateLisa.php?id=" .urlencode($convertions);
-                header("Location:$location");
-            }
-            else {
-                echo "This id does not exist";
+            if(isset($_POST['id'])) {
+                $id = (int) $_POST['id'];
+                // redirect to lisa.php with id so modal opens
+                header("Location: ../frontEnd/lisa.php?id=$id");
+                exit();
             }
         }
 
@@ -98,6 +95,12 @@
             $event_location = $_POST['event_location'];
             $event_status = $_POST['event_status'];
             $event_author = "LISA";
+
+            if (strtotime($event_end) < strtotime($event_start)) {
+                $location = "../frontEnd/lisa.php?error=invalid_date&id=$id"; // id if updating
+                header("Location: $location");
+                exit();
+            }
 
             if($id) {
                 $sql = "UPDATE eventlist SET event_title=?, 
@@ -159,10 +162,7 @@
             $event_author = "LISA";
 
             if (strtotime($event_end) < strtotime($event_start)) {
-                echo "<script>alert('Error: Event end date cannot be earlier than event start date.'); 
-                    window.location.href='../frontEnd/byte.php';
-                    </script>";
-                exit();
+                return "Error: Event end date cannot be earlier than event start date.";
             }
 
             $sql = "INSERT INTO eventlist (event_title, 
@@ -187,6 +187,103 @@
             }
             else {
                 echo "Error creation use: " .$stmt->error;
+            }
+        }
+
+        public function sortAndfilter ($events, $sortType, $filterType) {
+            if ($filterType == "all" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist WHERE event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
+                });
+            return $events;
+            }
+            
+            if ($filterType == "pending" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'pending' AND event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
+                });
+            return $events;
+            }
+
+            if ($filterType == "completed" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'completed' AND event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
+                });
+            return $events;
+            }
+
+            if ($filterType == "cancelled" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'cancelled' AND event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
+                });
+            return $events;
+            }
+
+            if ($filterType == "all" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist WHERE event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($b['event_start']) - strtotime($a['event_start']);
+                });
+            return $events;
+            }
+
+            if ($filterType == "pending" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'pending' AND event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($b['event_start']) - strtotime($a['event_start']);
+                });
+            return $events;
+            }
+
+            if ($filterType == "completed" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'completed' AND event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($b['event_start']) - strtotime($a['event_start']);
+                });
+            return $events;
+            }
+            if ($filterType == "cancelled" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'cancelled' AND event_author = 'LISA'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($b['event_start']) - strtotime($a['event_start']);
+                });
+            return $events;
             }
         }
     }
