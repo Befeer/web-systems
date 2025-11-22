@@ -121,10 +121,7 @@ session_start();
                     exit;
                 }
                 else {
-                    echo "<script>
-                            alert('Invalid username or password!');
-                            window.location.href='../frontEnd/loginPage.php';
-                        </script>";
+                    header("Location: ../frontEnd/loginPage.php?login_error=1");
                     exit;
                 }
             }
@@ -133,21 +130,12 @@ session_start();
         public function logout_admin() {
             session_unset();    // Remove all session variables
             session_destroy();  // Destroy the session
-            echo "<script>
-                    alert('You have been logged out.');
-                    window.location.href='../frontEnd/calendar.php';
-                </script>";
+            $location = "../frontEnd/calendar.php";
+            header("Location: $location");
             exit;
         }
 
         public function officeCheck ($officeRequired) {
-            if (!isset($_SESSION['admin_id'])) {
-                echo "<script>
-                        alert('You must log in first.');
-                        window.location.href='../frontEnd/loginPage.php';
-                    </script>";
-                exit();
-            }
 
             $isUltimate = $_SESSION['is_ultimate_admin'] ?? 0;
             $office = $_SESSION['office'] ?? "";
@@ -155,11 +143,8 @@ session_start();
             if ($isUltimate == 1) return;
             
             if ($office !== $officeRequired) {
-            echo "<script>
-                    alert('You are not allowed to access this page!');
-                    window.location.href='../frontEnd/UserDashboard.php';
-                </script>";
-            exit();
+                header("Location: ../frontEnd/UserDashboard.php?office_error=1");
+                exit();
             }
         }
 
@@ -173,37 +158,103 @@ session_start();
             }
         }
 
-        public function sortEvents($events, $sortType) {
-
-            if ($sortType === "nearest") {
+        public function sortAndfilter ($events, $sortType, $filterType) {
+            if ($filterType == "all" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
                 usort($events, function($a, $b) {
-                    return strtotime($a['event_start']) <=> strtotime($b['event_start']);
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
                 });
+            return $events;
+            }
+            
+            if ($filterType == "pending" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'pending'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
+                });
+            return $events;
             }
 
-            else if ($sortType === "farthest") {
+            if ($filterType == "completed" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'completed'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
+                });
+            return $events;
+            }
+
+            if ($filterType == "cancelled" && $sortType == "nearest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'cancelled'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($a['event_start']) - strtotime($b['event_start']);
+                });
+            return $events;
+            }
+
+            if ($filterType == "all" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
                 usort($events, function($a, $b) {
                     return strtotime($b['event_start']) - strtotime($a['event_start']);
                 });
+            return $events;
             }
 
-            return $events;
-        }
-
-        public function filterEvents($events, $filterStatus) {
-
-            // Allowed statuses
-            $allowedStatuses = ["pending", "completed", "cancelled"];
-
-            // Filter events if a valid status is selected
-            if (in_array(strtolower($filterStatus), $allowedStatuses)) {
-                $events = array_filter($events, function($event) use ($filterStatus) {
-                    return strtolower($event['event_status']) === strtolower($filterStatus);
+            if ($filterType == "pending" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'pending'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($b['event_start']) - strtotime($a['event_start']);
                 });
+            return $events;
             }
 
+            if ($filterType == "completed" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'completed'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($b['event_start']) - strtotime($a['event_start']);
+                });
             return $events;
+            }
+            if ($filterType == "cancelled" && $sortType == "farthest") {
+                $sql = "SELECT * FROM eventlist WHERE event_status = 'cancelled'";
+                $stmt = $this->connection->prepare($sql);
+                $stmt->execute();
+                $result = $stmt->get_result();
+                $events = $result->fetch_all(MYSQLI_ASSOC);
+                usort($events, function($a, $b) {
+                    return strtotime($b['event_start']) - strtotime($a['event_start']);
+                });
+            return $events;
+            }
         }
+
 
         public function actionReader() {
             if(isset($_GET['method_finder'])) {
