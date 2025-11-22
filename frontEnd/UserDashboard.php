@@ -12,6 +12,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
 </head>
+<?php if (isset($_GET['office_error'])): ?>
+    <p class="error-message">You are not allowed to access this page!</p>
+<?php endif; ?>
 <body>
     <h1>EVENT SCHEDULER</h1>
     <div>
