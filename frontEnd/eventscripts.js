@@ -27,24 +27,38 @@ modal.addEventListener('click', e => {
 function validatePassword() {
     let password = document.getElementById("admin_password").value;
     let confirm = document.getElementById("admin_confirm").value;
+    const error = document.getElementById('error');
+
 
     if (password !== confirm) {
-        alert("Error: Passwords do not match.");
-        return false; // stops submission
+        error.style.display = "block";  // show error
+        return false; // prevent form submission
     }
+
+    error.style.display = "none"; // hide error if valid
     return true;
 }
 
-//for event validation
 function validateEvent() {
-    let start = document.getElementById("event_start").value;
-    let end = document.getElementById("event_end").value;
+    const start = document.getElementById('event_start').value;
+    const end = document.getElementById('event_end').value;
+    const error = document.getElementById('error');
 
     if (new Date(end) < new Date(start)) {
-        alert("Error: Event End Date cannot be earlier than the Start Date.");
-        return false;
+        error.style.display = "block";  // show error
+        return false; // prevent form submission
     }
+
+    error.style.display = "none"; // hide error if valid
     return true;
 }
 
-
+function openAddModal() {
+    document.getElementById('eventAddModal').style.display = 'flex';
+}
+function closeModal() {
+    const add = document.getElementById("eventAddModal");
+    const edit = document.getElementById("eventEditModal");
+    if (add) add.style.display = "none";
+    if (edit) edit.style.display = "none";
+}
