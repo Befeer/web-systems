@@ -1,3 +1,14 @@
+<?php
+include "../backEnd/adminController.php";
+$controller = new AdminController();
+$controller->connection();
+
+$error = null;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $error = $controller->login_admin();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +18,9 @@
     <script src="eventscripts.js" defer></script>
     <title>Admin Log-in</title>
 </head>
+<?php if (isset($_GET['login_error'])): ?>
+        <p class="login-error">Invalid username or password!</p>
+    <?php endif; ?>
 <body>
     <h1>Admin Log-in</h1>
 
