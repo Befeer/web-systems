@@ -3,16 +3,13 @@ include "../backEnd/adminController.php";
 $conn = new AdminController();
 $conn->connection();
 
-$sort = $_GET['sort'] ?? "";
-$filter = $_GET['filter'] ?? "";
+// Get sort and filter from GET request
+$sort = $_GET['sort'] ?? "nearest";
+$filter = $_GET['filter'] ?? "all";
 $events = $conn->readAll();
 
-if ($sort) {
-    $events = $conn->sortEvents($events, $sort);
-}
-
-if ($filter) {
-    $events = $conn->filterEvents($events, $filter);
+if ($sort && $filter) {
+    $events = $conn->sortAndfilter($events, $sort, $filter);
 }
 ?>
 
@@ -27,15 +24,13 @@ if ($filter) {
 </head>
 <body>
     <div>
-        <form method="GET" id="sortForm">
-            <select name="sort" onchange="document.getElementById('sortForm').submit()">
+        <form method="GET" id="eventForm">
+            <select name="sort" onchange="document.getElementById('eventForm').submit()">
                 <option disabled selected>-- Sort Events --</option>
                 <option value="nearest" <?= ($sort=="nearest"?"selected":"") ?>>Nearest Events</option>
                 <option value="farthest" <?= ($sort=="farthest"?"selected":"") ?>>Farthest Events</option>
             </select>
-        </form>
-        <form method="GET" id="filterForm">
-            <select select name="filter" onchange="document.getElementById('filterForm').submit()">
+            <select select name="filter" onchange="document.getElementById('eventForm').submit()">
                 <option disabled selected>--Filter Events --</option>
                 <option value="all" <?= ($filter=="all"?"selected":"") ?>>All</option>
                 <option value="pending" <?= ($filter=="pending"?"selected":"") ?>>Pending</option>
